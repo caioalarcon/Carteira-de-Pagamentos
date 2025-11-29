@@ -1,37 +1,42 @@
-# Gradle files
+# === Gradle ===
 .gradle/
-.gradle-local/
-build/
-*/build/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
 
-# Android Studio
+# Se alguém zipou dists do Gradle junto do projeto (lixo comum)
+gradle/caches/
+gradle/daemon/
+gradle/native/
+gradle/wrapper/dists/
+
+# === Android Studio / IntelliJ ===
 .idea/
 *.iml
 /.settings/
+out/
+captures/
+.externalNativeBuild/
+.cxx/
 
-# Kotlin
-.kotlin/
-
-# Local configuration
+# === Local configuration ===
 local.properties
 key.properties
 
-# Native build artifacts
-.externalNativeBuild/
-.cxx/
-captures/
-
-# Key and signing files
+# === Keystores ===
 *.jks
 *.keystore
 
-# Generated outputs
-*.apk
-*.aar
-*.aab
-*.ap_
+# === Kotlin ===
+.kotlin/
 
-# Misc
+# === Generated outputs ===
+*.apk
+*.ap_
+*.aab
+*.aar
+
+# === Misc ===
 *.log
 *.orig
 *.pyc
