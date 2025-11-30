@@ -5,14 +5,16 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import com.example.carteiradepagamentos.domain.model.ThemeMode
 import com.example.carteiradepagamentos.feature.home.HomeScreen
 import com.example.carteiradepagamentos.feature.login.LoginScreen
 import com.example.carteiradepagamentos.feature.settings.SettingsScreen
@@ -39,36 +41,58 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun WalletAppRoot() {
-    var currentScreen by remember { mutableStateOf<Screen>(Screen.Login) }
-    val systemDarkTheme = isSystemInDarkTheme()
-    var isDarkTheme by rememberSaveable { mutableStateOf(systemDarkTheme) }
+    val appViewModel: AppViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+    val themeViewModel: ThemeViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+
+    val appUiState by appViewModel.uiState.collectAsState()
+    val themeMode by themeViewModel.themeMode.collectAsState()
+
+    val isDarkTheme = when (themeMode) {
+        ThemeMode.DARK -> true
+        ThemeMode.LIGHT -> false
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+    }
 
     CarteiraDePagamentosTheme(darkTheme = isDarkTheme) {
         Surface(modifier = Modifier.fillMaxSize()) {
-            when (val screen = currentScreen) {
-                is Screen.Login -> LoginScreen(
-                    onLoginSuccess = { currentScreen = Screen.Home }
-                )
+            if (!appUiState.isReady) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .wrapContentSize(Alignment.Center)
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                when (val screen = appUiState.currentScreen) {
+                    is Screen.Login -> LoginScreen(
+                        onLoginSuccess = { session ->
+                            themeViewModel.onSessionChanged(session)
+                            appViewModel.onLoginSuccess()
+                        }
+                    )
 
-                is Screen.Home -> HomeScreen(
-                    onLogout = { currentScreen = Screen.Login },
-                    onOpenSettings = { currentScreen = Screen.Settings },
-                    onContactSelected = { contactId ->
-                        currentScreen = Screen.Transfer(contactId)
-                    }
-                )
+                    is Screen.Home -> HomeScreen(
+                        onLogout = { appViewModel.onLoggedOut() },
+                        onOpenSettings = { appViewModel.navigateTo(Screen.Settings) },
+                        onContactSelected = { contactId ->
+                            appViewModel.navigateTo(Screen.Transfer(contactId))
+                        }
+                    )
 
-                is Screen.Transfer -> TransferScreen(
-                    contactId = screen.contactId,
-                    onBackToHome = { currentScreen = Screen.Home }
-                )
+                    is Screen.Transfer -> TransferScreen(
+                        contactId = screen.contactId,
+                        onBackToHome = { appViewModel.navigateTo(Screen.Home) }
+                    )
 
-                is Screen.Settings -> SettingsScreen(
-                    isDarkTheme = isDarkTheme,
-                    onDarkThemeToggled = { isDarkTheme = it },
-                    onBack = { currentScreen = Screen.Home },
-                    onLoggedOut = { currentScreen = Screen.Login }
-                )
+                    is Screen.Settings -> SettingsScreen(
+                        onBack = { appViewModel.navigateTo(Screen.Home) },
+                        onLoggedOut = {
+                            themeViewModel.onSessionChanged(null)
+                            appViewModel.onLoggedOut()
+                        }
+                    )
+                }
             }
         }
     }

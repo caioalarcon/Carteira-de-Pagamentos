@@ -1,5 +1,6 @@
 package com.example.carteiradepagamentos.feature.settings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,7 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -21,32 +22,34 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.carteiradepagamentos.ThemeViewModel
+import com.example.carteiradepagamentos.domain.model.ThemeMode
 
 @Composable
 fun SettingsScreen(
-    isDarkTheme: Boolean,
-    onDarkThemeToggled: (Boolean) -> Unit,
     onBack: () -> Unit,
     onLoggedOut: () -> Unit,
-    viewModel: SettingsViewModel = hiltViewModel()
+    viewModel: SettingsViewModel = hiltViewModel(),
+    themeViewModel: ThemeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val themeMode by themeViewModel.themeMode.collectAsState()
 
     SettingsContent(
-        isDarkTheme = isDarkTheme,
+        themeMode = themeMode,
         uiState = uiState,
         onBack = onBack,
-        onDarkThemeToggled = onDarkThemeToggled,
+        onThemeSelected = themeViewModel::onThemeSelected,
         onLogoutClick = { viewModel.onLogoutClicked(onLoggedOut) }
     )
 }
 
 @Composable
 fun SettingsContent(
-    isDarkTheme: Boolean,
+    themeMode: ThemeMode,
     uiState: SettingsUiState,
     onBack: () -> Unit,
-    onDarkThemeToggled: (Boolean) -> Unit,
+    onThemeSelected: (ThemeMode) -> Unit,
     onLogoutClick: () -> Unit
 ) {
     Column(
@@ -88,18 +91,27 @@ fun SettingsContent(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
-                        Text(text = "Modo escuro", style = MaterialTheme.typography.titleMedium)
-                        Text(
-                            text = "Ative ou desative independentemente do sistema",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(text = "Tema", style = MaterialTheme.typography.titleMedium)
+                        ThemeOption(
+                            title = "Claro",
+                            description = "Sempre usar o tema claro",
+                            selected = themeMode == ThemeMode.LIGHT,
+                            onClick = { onThemeSelected(ThemeMode.LIGHT) }
+                        )
+                        ThemeOption(
+                            title = "Escuro",
+                            description = "Sempre usar o tema escuro",
+                            selected = themeMode == ThemeMode.DARK,
+                            onClick = { onThemeSelected(ThemeMode.DARK) }
+                        )
+                        ThemeOption(
+                            title = "Acompanhar sistema",
+                            description = "Respeita a configuração do dispositivo",
+                            selected = themeMode == ThemeMode.SYSTEM,
+                            onClick = { onThemeSelected(ThemeMode.SYSTEM) }
                         )
                     }
-                    Switch(
-                        checked = isDarkTheme,
-                        onCheckedChange = onDarkThemeToggled
-                    )
                 }
 
                 Spacer(Modifier.height(4.dp))
@@ -120,6 +132,32 @@ fun SettingsContent(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ThemeOption(
+    title: String,
+    description: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        RadioButton(selected = selected, onClick = onClick)
+        Column {
+            Text(text = title, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
