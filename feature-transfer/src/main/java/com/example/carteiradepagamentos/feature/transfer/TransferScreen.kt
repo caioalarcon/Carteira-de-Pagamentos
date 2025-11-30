@@ -36,6 +36,10 @@ fun TransferScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    LaunchedEffect(Unit) {
+        viewModel.reload()
+    }
+
     LaunchedEffect(contactId, uiState.contacts) {
         if (contactId != null && uiState.contacts.isNotEmpty()) {
             val target = uiState.contacts.find { it.id == contactId }
