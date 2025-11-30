@@ -5,7 +5,7 @@ import com.example.carteiradepagamentos.data.local.SharedPrefsAuthStorage
 import com.example.carteiradepagamentos.data.memory.InMemoryBalanceStorage
 import com.example.carteiradepagamentos.data.memory.InMemoryWalletRepository
 import com.example.carteiradepagamentos.data.notification.AndroidNotifier
-import com.example.carteiradepagamentos.data.service.FakeAuthorizeService
+import com.example.carteiradepagamentos.data.remote.NetworkAuthorizeService
 import com.example.carteiradepagamentos.domain.repository.AuthRepository
 import com.example.carteiradepagamentos.domain.repository.WalletRepository
 import com.example.carteiradepagamentos.domain.service.AuthorizeService
@@ -49,7 +49,7 @@ abstract class AppModule {
     @Binds
     @Singleton
     abstract fun bindAuthorizeService(
-        impl: FakeAuthorizeService
+        impl: NetworkAuthorizeService
     ): AuthorizeService
 
     @Binds
