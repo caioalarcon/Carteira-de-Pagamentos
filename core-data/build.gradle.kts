@@ -14,6 +14,23 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildTypes {
+        debug {
+            buildConfigField(
+                "String",
+                "API_BASE_URL",
+                "\"https://example.com/api/v1/\""
+            )
+        }
+        release {
+            buildConfigField(
+                "String",
+                "API_BASE_URL",
+                "\"https://example.com/api/v1/\""
+            )
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -29,6 +46,9 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.hilt.android)
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-moshi:2.11.0")
     kapt(libs.hilt.compiler)
 }
 
