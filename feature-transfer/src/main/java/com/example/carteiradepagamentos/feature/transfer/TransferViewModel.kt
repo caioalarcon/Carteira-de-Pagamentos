@@ -6,10 +6,12 @@ import com.example.carteiradepagamentos.domain.model.Contact
 import com.example.carteiradepagamentos.domain.repository.WalletRepository
 import com.example.carteiradepagamentos.domain.service.Notifier
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.text.NumberFormat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,7 +38,8 @@ class TransferViewModel @Inject constructor(
                 balanceText = formatBalance(summary.balanceInCents),
                 contacts = contacts,
                 selectedContact = contacts.firstOrNull(),
-                amountInput = "",
+                amountInput = formatCurrency(0),
+                amountInCents = 0,
                 errorMessage = null,
                 successMessage = null
             )
@@ -44,8 +47,11 @@ class TransferViewModel @Inject constructor(
     }
 
     fun onAmountChanged(value: String) {
+        val amountDigits = value.filter(Char::isDigit)
+        val amountInCents = amountDigits.toLongOrNull() ?: 0
         _uiState.value = _uiState.value.copy(
-            amountInput = value,
+            amountInput = formatCurrency(amountInCents),
+            amountInCents = amountInCents,
             errorMessage = null,
             successMessage = null
         )
@@ -68,8 +74,8 @@ class TransferViewModel @Inject constructor(
             return
         }
 
-        val amountInCents = state.amountInput.toLongOrNull()
-        if (amountInCents == null || amountInCents <= 0) {
+        val amountInCents = state.amountInCents.takeIf { it > 0 }
+        if (amountInCents == null) {
             _uiState.value = state.copy(errorMessage = "Valor inválido")
             return
         }
@@ -90,7 +96,8 @@ class TransferViewModel @Inject constructor(
                         isLoading = false,
                         successMessage = "Transferência realizada com sucesso",
                         balanceText = formatBalance(summary.balanceInCents),
-                        amountInput = "",
+                        amountInput = formatCurrency(0),
+                        amountInCents = 0,
                     )
                 },
                 onFailure = { error ->
@@ -116,6 +123,11 @@ class TransferViewModel @Inject constructor(
         val reais = balanceInCents / 100
         val cents = balanceInCents % 100
         return "R$ %d,%02d".format(reais, cents)
+    }
+
+    private fun formatCurrency(amountInCents: Long): String {
+        val formatter = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
+        return formatter.format(amountInCents / 100.0).replace('\u00A0', ' ')
     }
 
     fun clearSuccessMessage() {
