@@ -22,10 +22,11 @@ class TransferViewModel @Inject constructor(
     val uiState: StateFlow<TransferUiState> = _uiState.asStateFlow()
 
     init {
-        load()
+        reload()
     }
 
-    private fun load() {
+    fun reload() {
+        _uiState.value = TransferUiState(isLoading = true)
         viewModelScope.launch {
             val summary = walletRepository.getAccountSummary()
             val contacts = walletRepository.getContacts()
@@ -34,7 +35,10 @@ class TransferViewModel @Inject constructor(
                 isLoading = false,
                 balanceText = formatBalance(summary.balanceInCents),
                 contacts = contacts,
-                selectedContact = contacts.firstOrNull()
+                selectedContact = contacts.firstOrNull(),
+                amountInput = "",
+                errorMessage = null,
+                successMessage = null
             )
         }
     }
