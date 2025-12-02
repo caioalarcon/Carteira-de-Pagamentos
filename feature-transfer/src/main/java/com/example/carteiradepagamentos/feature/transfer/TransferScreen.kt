@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -39,8 +40,9 @@ fun TransferScreen(
     viewModel: TransferViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val successDialogVisible = uiState.successDialogData != null
 
-    BackHandler(onBack = onBackToHome)
+    BackHandler(enabled = !successDialogVisible, onBack = onBackToHome)
 
     LaunchedEffect(contactId, uiState.contacts) {
         if (contactId != null && uiState.contacts.isNotEmpty()) {
@@ -52,13 +54,6 @@ fun TransferScreen(
     }
 
     // Só navega, sem trocar layout antes
-    LaunchedEffect(uiState.successMessage) {
-        if (uiState.successMessage != null) {
-            viewModel.clearSuccessMessage()
-            onBackToHome()
-        }
-    }
-
     // Mantém sempre o mesmo layout na tela
     TransferContent(
         uiState = uiState,
@@ -67,6 +62,16 @@ fun TransferScreen(
         onContactSelected = viewModel::onContactSelected,
         onBack = onBackToHome
     )
+
+    uiState.successDialogData?.let { successData ->
+        TransferSuccessDialog(
+            successData = successData,
+            onConfirm = {
+                viewModel.clearSuccessDialog()
+                onBackToHome()
+            }
+        )
+    }
 }
 
 @Composable
@@ -134,12 +139,31 @@ fun TransferContent(
             Spacer(Modifier.height(8.dp))
             Text(msg, color = MaterialTheme.colorScheme.error)
         }
-
-        uiState.successMessage?.let { msg ->
-            Spacer(Modifier.height(8.dp))
-            Text(msg, color = MaterialTheme.colorScheme.primary)
-        }
     }
+}
+
+@Composable
+private fun TransferSuccessDialog(
+    successData: TransferSuccessData,
+    onConfirm: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onConfirm,
+        confirmButton = {
+            Button(onClick = onConfirm) {
+                Text("OK")
+            }
+        },
+        title = { Text("Transferência enviada") },
+        text = {
+            Column {
+                Text("Valor: ${successData.amountText}")
+                Spacer(Modifier.height(4.dp))
+                Text("Destinatário: ${successData.contactName}")
+                Text("Conta: ${successData.contactAccount}")
+            }
+        }
+    )
 }
 
 @Composable

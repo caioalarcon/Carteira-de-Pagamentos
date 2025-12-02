@@ -93,7 +93,10 @@ class TransferViewModelTest {
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
-        assertEquals("Transferência realizada com sucesso", state.successMessage)
+        val successData = state.successDialogData
+        assertEquals("Alice", successData?.contactName)
+        assertEquals("0001-1", successData?.contactAccount)
+        assertEquals("R$ 15,00", successData?.amountText)
         assertEquals("R$ 0,00", state.amountInput)
         assertEquals(contacts.first() to 1_500L, notifier.lastNotification)
     }

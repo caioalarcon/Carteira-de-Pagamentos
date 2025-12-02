@@ -41,7 +41,7 @@ class TransferViewModel @Inject constructor(
                 amountInput = formatCurrency(0),
                 amountInCents = 0,
                 errorMessage = null,
-                successMessage = null
+                successDialogData = null
             )
         }
     }
@@ -53,7 +53,7 @@ class TransferViewModel @Inject constructor(
             amountInput = formatCurrency(amountInCents),
             amountInCents = amountInCents,
             errorMessage = null,
-            successMessage = null
+            successDialogData = null
         )
     }
 
@@ -61,7 +61,7 @@ class TransferViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(
             selectedContact = contact,
             errorMessage = null,
-            successMessage = null
+            successDialogData = null
         )
     }
 
@@ -84,7 +84,7 @@ class TransferViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(
                 isLoading = true,
                 errorMessage = null,
-                successMessage = null
+                successDialogData = null
             )
 
             val result = walletRepository.transfer(contact.id, amountInCents)
@@ -94,7 +94,11 @@ class TransferViewModel @Inject constructor(
                     notifier.notifyTransferSuccess(contact, amountInCents)
                     _uiState.value.copy(
                         isLoading = false,
-                        successMessage = "Transferência realizada com sucesso",
+                        successDialogData = TransferSuccessData(
+                            contactName = contact.name,
+                            contactAccount = contact.accountNumber,
+                            amountText = formatCurrency(amountInCents),
+                        ),
                         balanceText = formatCurrency(summary.balanceInCents),
                         amountInput = formatCurrency(0),
                         amountInCents = 0,
@@ -112,7 +116,8 @@ class TransferViewModel @Inject constructor(
 
                     _uiState.value.copy(
                         isLoading = false,
-                        errorMessage = message
+                        errorMessage = message,
+                        successDialogData = null
                     )
                 }
             )
@@ -124,7 +129,7 @@ class TransferViewModel @Inject constructor(
         return formatter.format(amountInCents / 100.0).replace('\u00A0', ' ')
     }
 
-    fun clearSuccessMessage() {
-        _uiState.value = _uiState.value.copy(successMessage = null)
+    fun clearSuccessDialog() {
+        _uiState.value = _uiState.value.copy(successDialogData = null)
     }
 }
