@@ -13,7 +13,12 @@ class NetworkAuthorizeService @Inject constructor(
         return try {
             val value = amountInCents / 100.0
             val response = api.authorize(AuthorizeRequest(value = value))
-            Result.success(response.authorized)
+            if (response.authorized) {
+                Result.success(true)
+            } else {
+                val message = response.reason ?: "operation not allowed"
+                Result.failure(IllegalStateException(message))
+            }
         } catch (e: Exception) {
             Result.failure(e)
         }
