@@ -1,5 +1,6 @@
 package com.example.carteiradepagamentos.feature.settings
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,6 +35,8 @@ fun SettingsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val themeMode by themeViewModel.themeMode.collectAsState()
+
+    BackHandler(onBack = onBack)
 
     SettingsContent(
         themeMode = themeMode,
@@ -114,16 +117,6 @@ fun SettingsContent(
                     }
                 }
 
-                Spacer(Modifier.height(4.dp))
-
-                Button(
-                    onClick = onLogoutClick,
-                    enabled = !uiState.isLoggingOut,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(if (uiState.isLoggingOut) "Saindo..." else "Sair")
-                }
-
                 uiState.errorMessage?.let { message ->
                     Text(
                         text = message,
@@ -132,6 +125,16 @@ fun SettingsContent(
                     )
                 }
             }
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        Button(
+            onClick = onLogoutClick,
+            enabled = !uiState.isLoggingOut,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(if (uiState.isLoggingOut) "Desconectando..." else "Desconectar")
         }
     }
 }
