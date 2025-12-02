@@ -11,8 +11,8 @@ class NetworkAuthorizeService @Inject constructor(
 
     override suspend fun authorizeTransfer(amountInCents: Long): Result<Boolean> {
         return try {
-            val value = amountInCents / 100.0
-            val response = api.authorize(AuthorizeRequest(value = value))
+            val response = api.authorize(AuthorizeRequest(value = amountInCents))
+
             Result.success(response.authorized)
         } catch (e: Exception) {
             Result.failure(e)

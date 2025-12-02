@@ -4,7 +4,7 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 
 data class AuthorizeRequest(
-    val value: Double
+    val value: Long
 )
 
 data class AuthorizeResponse(

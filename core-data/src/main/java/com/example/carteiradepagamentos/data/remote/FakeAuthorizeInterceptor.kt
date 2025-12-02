@@ -21,9 +21,9 @@ class FakeAuthorizeInterceptor : Interceptor {
             } ?: "{}"
 
             val json = JSONObject(bodyStr)
-            val value = json.optDouble("value", 0.0)
+            val value = json.optLong("value", 0L)
 
-            val responseJson = if (value == 403.0) {
+            val responseJson = if (value == 40300L) {
                 """{"authorized":false,"reason":"operation not allowed"}"""
             } else {
                 """{"authorized":true}"""
