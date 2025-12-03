@@ -8,6 +8,7 @@ data class TransferUiState(
     val amountInput: String = "R$ 0,00",
     val amountInCents: Long = 0,
     val balanceText: String = "",
+    val balanceInCents: Long = 0L,
     val contacts: List<Contact> = emptyList(),
     val successDialogData: TransferSuccessData? = null,
     val errorDialogData: TransferErrorData? = null
