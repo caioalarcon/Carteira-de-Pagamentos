@@ -46,6 +46,7 @@ android {
 
 dependencies {
     implementation(project(":core-domain"))
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.android)

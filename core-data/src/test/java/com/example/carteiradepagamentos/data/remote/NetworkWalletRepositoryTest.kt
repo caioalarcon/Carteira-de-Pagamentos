@@ -12,7 +12,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
+import retrofit2.converter.gson.GsonConverterFactory
 
 class NetworkWalletRepositoryTest {
 
@@ -42,7 +42,7 @@ class NetworkWalletRepositoryTest {
 
         val retrofit = Retrofit.Builder()
             .baseUrl(server.url("/"))
-            .addConverterFactory(MoshiConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create())
             .build()
 
         walletApi = retrofit.create(WalletApi::class.java)
