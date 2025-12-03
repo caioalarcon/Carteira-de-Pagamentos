@@ -52,7 +52,7 @@ class NetworkWalletRepository @Inject constructor(
             return Result.failure(IllegalStateException("operation not allowed"))
         }
 
-        return try {
+        return runCatching {
             val response = walletApi.transfer(
                 TransferRequest(
                     userId = session.user.id,
@@ -60,9 +60,7 @@ class NetworkWalletRepository @Inject constructor(
                     amountInCents = amountInCents
                 )
             )
-            Result.success(AccountSummary(balanceInCents = response.balanceInCents))
-        } catch (e: Exception) {
-            Result.failure(e)
+            AccountSummary(balanceInCents = response.balanceInCents)
         }
     }
 }

@@ -60,7 +60,8 @@ fun TransferScreen(
         onAmountChange = viewModel::onAmountChanged,
         onConfirmTransfer = viewModel::onConfirmTransfer,
         onContactSelected = viewModel::onContactSelected,
-        onBack = onBackToHome
+        onBack = onBackToHome,
+        onRetry = viewModel::reload
     )
 
     uiState.successDialogData?.let { successData ->
@@ -80,7 +81,8 @@ fun TransferContent(
     onAmountChange: (String) -> Unit,
     onConfirmTransfer: () -> Unit,
     onContactSelected: (Contact) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onRetry: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -137,7 +139,16 @@ fun TransferContent(
 
         uiState.errorMessage?.let { msg ->
             Spacer(Modifier.height(8.dp))
-            Text(msg, color = MaterialTheme.colorScheme.error)
+            Column {
+                Text(msg, color = MaterialTheme.colorScheme.error)
+                Spacer(Modifier.height(4.dp))
+                Button(
+                    onClick = onRetry,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Tentar novamente")
+                }
+            }
         }
     }
 }

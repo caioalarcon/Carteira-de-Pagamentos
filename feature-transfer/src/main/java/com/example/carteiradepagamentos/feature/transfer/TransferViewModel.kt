@@ -2,6 +2,7 @@ package com.example.carteiradepagamentos.feature.transfer
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.carteiradepagamentos.data.toUserFriendlyMessage
 import com.example.carteiradepagamentos.domain.model.Contact
 import com.example.carteiradepagamentos.domain.repository.WalletRepository
 import com.example.carteiradepagamentos.domain.service.Notifier
@@ -30,19 +31,26 @@ class TransferViewModel @Inject constructor(
     fun reload() {
         _uiState.value = TransferUiState(isLoading = true)
         viewModelScope.launch {
-            val summary = walletRepository.getAccountSummary()
-            val contacts = walletRepository.getContacts()
+            try {
+                val summary = walletRepository.getAccountSummary()
+                val contacts = walletRepository.getContacts()
 
-            _uiState.value = _uiState.value.copy(
-                isLoading = false,
-                balanceText = formatCurrency(summary.balanceInCents),
-                contacts = contacts,
-                selectedContact = contacts.firstOrNull(),
-                amountInput = formatCurrency(0),
-                amountInCents = 0,
-                errorMessage = null,
-                successDialogData = null
-            )
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    balanceText = formatCurrency(summary.balanceInCents),
+                    contacts = contacts,
+                    selectedContact = contacts.firstOrNull(),
+                    amountInput = formatCurrency(0),
+                    amountInCents = 0,
+                    errorMessage = null,
+                    successDialogData = null
+                )
+            } catch (e: Exception) {
+                _uiState.value = TransferUiState(
+                    isLoading = false,
+                    errorMessage = e.toUserFriendlyMessage()
+                )
+            }
         }
     }
 
