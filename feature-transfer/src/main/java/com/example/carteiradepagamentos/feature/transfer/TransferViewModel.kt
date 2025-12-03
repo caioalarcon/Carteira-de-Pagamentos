@@ -38,10 +38,11 @@ class TransferViewModel @Inject constructor(
 
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
+                    balanceInCents = summary.balanceInCents,
                     balanceText = summary.balanceInCents.toBRCurrency(),
                     contacts = contacts,
                     selectedContact = contacts.firstOrNull(),
-                    amountInput = 0.toBRCurrency(),
+                    amountInput = 0L.toBRCurrency(),
                     amountInCents = 0,
                     successDialogData = null,
                     errorDialogData = null
@@ -57,7 +58,7 @@ class TransferViewModel @Inject constructor(
 
     fun onAmountChanged(value: String) {
         val amountDigits = value.filter(Char::isDigit)
-        val amountInCents = amountDigits.toLongOrNull() ?: 0
+        val amountInCents = amountDigits.toLongOrNull() ?: 0L
         _uiState.value = _uiState.value.copy(
             amountInput = amountInCents.toBRCurrency(),
             amountInCents = amountInCents,
@@ -76,6 +77,7 @@ class TransferViewModel @Inject constructor(
         val state = _uiState.value
         val contact = state.selectedContact
 
+        // valida: contato selecionado
         if (contact == null) {
             _uiState.value = state.copy(
                 errorDialogData = TransferErrorData(
@@ -86,11 +88,25 @@ class TransferViewModel @Inject constructor(
             return
         }
 
+        // valida: valor > 0
         val amountInCents = state.amountInCents.takeIf { it > 0 }
         if (amountInCents == null) {
             _uiState.value = state.copy(
                 errorDialogData = TransferErrorData(
                     message = "Valor inválido",
+                    contactName = contact.name,
+                    contactAccount = contact.accountNumber
+                )
+            )
+            return
+        }
+
+        // valida: saldo suficiente (local)
+        if (amountInCents > state.balanceInCents) {
+            _uiState.value = state.copy(
+                errorDialogData = TransferErrorData(
+                    message = "Saldo insuficiente",
+                    amountText = amountInCents.toBRCurrency(),
                     contactName = contact.name,
                     contactAccount = contact.accountNumber
                 )
@@ -116,8 +132,9 @@ class TransferViewModel @Inject constructor(
                             contactAccount = contact.accountNumber,
                             amountText = amountInCents.toBRCurrency(),
                         ),
+                        balanceInCents = summary.balanceInCents,
                         balanceText = summary.balanceInCents.toBRCurrency(),
-                        amountInput = 0.toBRCurrency(),
+                        amountInput = 0L.toBRCurrency(),
                         amountInCents = 0,
                     )
                 },
@@ -150,20 +167,32 @@ class TransferViewModel @Inject constructor(
     private fun Throwable.resolveFriendlyMessage(): String {
         val serverMessage = (this as? HttpException)?.let { http ->
             runCatching {
-                http.response()?.errorBody()?.string()?.let { body ->
-                    JSONObject(body).optString("message").takeIf { it.isNotBlank() }
-                }
+                http.response()
+                    ?.errorBody()
+                    ?.string()
+                    ?.let { body ->
+                        JSONObject(body)
+                            .optString("message")
+                            .takeIf { it.isNotBlank() }
+                    }
             }.getOrNull()
         }
 
         return when {
-            serverMessage?.contains("Saldo insuficiente", ignoreCase = true) == true -> "Saldo insuficiente"
+            serverMessage?.contains("Saldo insuficiente", ignoreCase = true) == true ->
+                "Saldo insuficiente"
+
             serverMessage?.contains("operation not allowed", ignoreCase = true) == true ->
                 "Transferência bloqueada por política de segurança (valor R$ 403,00)"
+
             message?.contains("operation not allowed", ignoreCase = true) == true ->
                 "Transferência bloqueada por política de segurança (valor R$ 403,00)"
-            message?.contains("Saldo insuficiente", ignoreCase = true) == true -> "Saldo insuficiente"
+
+            message?.contains("Saldo insuficiente", ignoreCase = true) == true ->
+                "Saldo insuficiente"
+
             serverMessage != null -> serverMessage
+
             else -> toUserFriendlyMessage()
         }
     }
