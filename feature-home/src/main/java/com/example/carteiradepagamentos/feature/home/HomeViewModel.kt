@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.carteiradepagamentos.data.toUserFriendlyMessage
 import com.example.carteiradepagamentos.domain.repository.AuthRepository
 import com.example.carteiradepagamentos.domain.repository.WalletRepository
+import com.example.carteiradepagamentos.domain.format.toBRCurrency
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -46,7 +47,7 @@ class HomeViewModel @Inject constructor(
                     isLoading = false,
                     userName = session.user.name,
                     userEmail = session.user.email,
-                    balanceText = formatBalance(summary.balanceInCents),
+                    balanceText = summary.balanceInCents.toBRCurrency(),
                     contacts = contacts
                 )
             } catch (e: Exception) {
@@ -56,11 +57,5 @@ class HomeViewModel @Inject constructor(
                 )
             }
         }
-    }
-
-    private fun formatBalance(balanceInCents: Long): String {
-        val reais = balanceInCents / 100
-        val cents = balanceInCents % 100
-        return "R$ %d,%02d".format(reais, cents)
     }
 }

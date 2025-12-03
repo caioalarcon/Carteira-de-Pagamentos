@@ -4,15 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.carteiradepagamentos.data.toUserFriendlyMessage
 import com.example.carteiradepagamentos.domain.model.Contact
+import com.example.carteiradepagamentos.domain.format.toBRCurrency
 import com.example.carteiradepagamentos.domain.repository.WalletRepository
 import com.example.carteiradepagamentos.domain.service.Notifier
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.text.NumberFormat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -37,10 +36,10 @@ class TransferViewModel @Inject constructor(
 
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    balanceText = formatCurrency(summary.balanceInCents),
+                    balanceText = summary.balanceInCents.toBRCurrency(),
                     contacts = contacts,
                     selectedContact = contacts.firstOrNull(),
-                    amountInput = formatCurrency(0),
+                    amountInput = 0.toBRCurrency(),
                     amountInCents = 0,
                     errorMessage = null,
                     successDialogData = null
@@ -58,7 +57,7 @@ class TransferViewModel @Inject constructor(
         val amountDigits = value.filter(Char::isDigit)
         val amountInCents = amountDigits.toLongOrNull() ?: 0
         _uiState.value = _uiState.value.copy(
-            amountInput = formatCurrency(amountInCents),
+            amountInput = amountInCents.toBRCurrency(),
             amountInCents = amountInCents,
             errorMessage = null,
             successDialogData = null
@@ -105,10 +104,10 @@ class TransferViewModel @Inject constructor(
                         successDialogData = TransferSuccessData(
                             contactName = contact.name,
                             contactAccount = contact.accountNumber,
-                            amountText = formatCurrency(amountInCents),
+                            amountText = amountInCents.toBRCurrency(),
                         ),
-                        balanceText = formatCurrency(summary.balanceInCents),
-                        amountInput = formatCurrency(0),
+                        balanceText = summary.balanceInCents.toBRCurrency(),
+                        amountInput = 0.toBRCurrency(),
                         amountInCents = 0,
                     )
                 },
@@ -130,11 +129,6 @@ class TransferViewModel @Inject constructor(
                 }
             )
         }
-    }
-
-    private fun formatCurrency(amountInCents: Long): String {
-        val formatter = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
-        return formatter.format(amountInCents / 100.0).replace('\u00A0', ' ')
     }
 
     fun clearSuccessDialog() {
