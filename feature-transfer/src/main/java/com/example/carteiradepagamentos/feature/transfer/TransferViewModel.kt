@@ -77,13 +77,24 @@ class TransferViewModel @Inject constructor(
         val contact = state.selectedContact
 
         if (contact == null) {
-            _uiState.value = state.copy(errorDialogData = TransferErrorData("Selecione um contato"))
+            _uiState.value = state.copy(
+                errorDialogData = TransferErrorData(
+                    message = "Selecione um contato",
+                    amountText = state.amountInCents.toBRCurrency()
+                )
+            )
             return
         }
 
         val amountInCents = state.amountInCents.takeIf { it > 0 }
         if (amountInCents == null) {
-            _uiState.value = state.copy(errorDialogData = TransferErrorData("Valor inválido"))
+            _uiState.value = state.copy(
+                errorDialogData = TransferErrorData(
+                    message = "Valor inválido",
+                    contactName = contact.name,
+                    contactAccount = contact.accountNumber
+                )
+            )
             return
         }
 
@@ -115,7 +126,12 @@ class TransferViewModel @Inject constructor(
 
                     _uiState.value.copy(
                         isLoading = false,
-                        errorDialogData = TransferErrorData(message),
+                        errorDialogData = TransferErrorData(
+                            message = message,
+                            amountText = amountInCents.toBRCurrency(),
+                            contactName = contact.name,
+                            contactAccount = contact.accountNumber,
+                        ),
                         successDialogData = null
                     )
                 }

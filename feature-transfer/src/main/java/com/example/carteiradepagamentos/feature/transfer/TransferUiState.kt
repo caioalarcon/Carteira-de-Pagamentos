@@ -21,4 +21,7 @@ data class TransferSuccessData(
 
 data class TransferErrorData(
     val message: String,
+    val amountText: String? = null,
+    val contactName: String? = null,
+    val contactAccount: String? = null,
 )

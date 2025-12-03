@@ -91,6 +91,9 @@ fun TransferScreen(
     uiState.errorDialogData?.let { errorData ->
         TransferErrorDialog(
             message = errorData.message,
+            amountText = errorData.amountText,
+            contactName = errorData.contactName,
+            contactAccount = errorData.contactAccount,
             onRetry = {
                 viewModel.clearErrorDialog()
                 viewModel.reload()
@@ -193,6 +196,9 @@ private fun TransferSuccessDialog(
 @Composable
 private fun TransferErrorDialog(
     message: String,
+    amountText: String?,
+    contactName: String?,
+    contactAccount: String?,
     onRetry: () -> Unit,
     onCancel: () -> Unit,
 ) {
@@ -205,7 +211,22 @@ private fun TransferErrorDialog(
             TextButton(onClick = onCancel) { Text("Voltar") }
         },
         title = { Text("Erro na transferência") },
-        text = { Text(message) }
+        text = {
+            Column {
+                Text(message)
+                amountText?.let {
+                    Spacer(Modifier.height(4.dp))
+                    Text("Valor: $it")
+                }
+                if (!contactName.isNullOrBlank()) {
+                    Spacer(Modifier.height(4.dp))
+                    Text("Destinatário: $contactName")
+                }
+                if (!contactAccount.isNullOrBlank()) {
+                    Text("Conta: $contactAccount")
+                }
+            }
+        }
     )
 }
 
