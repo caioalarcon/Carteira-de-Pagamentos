@@ -115,7 +115,10 @@ class TransferViewModelTest {
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
-        assertEquals("Transferência bloqueada por política de segurança (valor R$ 403,00)", state.errorDialogData?.message)
+        assertEquals(
+            "Transferência bloqueada por política de segurança (valor R$ 403,00)",
+            state.errorDialogData?.message
+        )
         assertNull(notifier.lastNotification)
     }
 

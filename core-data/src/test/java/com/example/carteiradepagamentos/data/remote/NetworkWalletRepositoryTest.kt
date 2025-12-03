@@ -5,6 +5,7 @@ import com.example.carteiradepagamentos.domain.model.User
 import com.example.carteiradepagamentos.domain.repository.AuthRepository
 import com.example.carteiradepagamentos.domain.service.AuthorizeService
 import kotlinx.coroutines.test.runTest
+import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
@@ -40,8 +41,12 @@ class NetworkWalletRepositoryTest {
         server = MockWebServer()
         server.start()
 
+        // Retrofit completamente limpo, sem interceptores
+        val client = OkHttpClient.Builder().build()
+
         val retrofit = Retrofit.Builder()
             .baseUrl(server.url("/"))
+            .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
@@ -61,6 +66,14 @@ class NetworkWalletRepositoryTest {
 
     @Test
     fun `transfer makes http call and parses response`() = runTest {
+        // Resposta do GET /wallet/summary
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody("""{"balanceInCents": 100000}""")
+        )
+
+        // Resposta do POST /wallet/transfer
         server.enqueue(
             MockResponse()
                 .setResponseCode(200)
@@ -68,8 +81,8 @@ class NetworkWalletRepositoryTest {
         )
 
         val result = repository.transfer("acc2", 2500)
-
         val summary = result.getOrThrow()
+
         assertEquals(97_500L, summary.balanceInCents)
     }
 }
